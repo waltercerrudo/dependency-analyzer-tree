@@ -1,0 +1,130 @@
+From 7af9dadbb3bd760146c08607da9492243f1a17ea Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Subject: [PATCH] Update extension for full Visual Studio 2022 compatibility
+
+diff --git a/ReferenceConflictAnalyser.sln b/ReferenceConflictAnalyser.sln
+index e6257bf..c99dbc0 100644
+--- a/ReferenceConflictAnalyser.sln
++++ b/ReferenceConflictAnalyser.sln
+@@ -1,8 +1,8 @@
+ 
+ Microsoft Visual Studio Solution File, Format Version 12.00
+-# Visual Studio 15
+-VisualStudioVersion = 15.0.26430.12
+-MinimumVisualStudioVersion = 10.0.40219.1
++# Visual Studio Version 17
++VisualStudioVersion = 17.9.34723.18
++MinimumVisualStudioVersion = 17.0.31903.59
+ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReferenceConflictAnalyser", "ReferenceConflictAnalyser\ReferenceConflictAnalyser.csproj", "{28335ADD-45DE-44A3-97FF-0640330554EC}"
+ EndProject
+diff --git a/ReferenceConflictAnalyser.VSExtension/ReferenceConflictAnalyser.VSExtension.csproj b/ReferenceConflictAnalyser.VSExtension/ReferenceConflictAnalyser.VSExtension.csproj
+index fa5686b..a96ce23 100644
+--- a/ReferenceConflictAnalyser.VSExtension/ReferenceConflictAnalyser.VSExtension.csproj
++++ b/ReferenceConflictAnalyser.VSExtension/ReferenceConflictAnalyser.VSExtension.csproj
+@@ -1,7 +1,7 @@
+ <?xml version="1.0" encoding="utf-8"?>
+-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
++<Project ToolsVersion="17.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+   <PropertyGroup>
+-    <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
++    <MinimumVisualStudioVersion>17.0</MinimumVisualStudioVersion>
+     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+     <NuGetPackageImportStamp>
+     </NuGetPackageImportStamp>
+@@ -10,7 +10,7 @@
+     </FileUpgradeFlags>
+     <UpgradeBackupLocation>
+     </UpgradeBackupLocation>
+-    <OldToolsVersion>14.0</OldToolsVersion>
++    <OldToolsVersion>17.0</OldToolsVersion>
+     <TargetFrameworkProfile />
+   </PropertyGroup>
+   <PropertyGroup>
+@@ -123,7 +123,12 @@
+   </ItemGroup>
+   <ItemGroup>
+     <PackageReference Include="Microsoft.VisualStudio.Shell.15.0">
+-      <Version>17.0.31902.203</Version>
++      <Version>17.9.37033.126</Version>
++    </PackageReference>
++    <PackageReference Include="Microsoft.VSSDK.BuildTools">
++      <Version>17.9.3184</Version>
++      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
++      <PrivateAssets>all</PrivateAssets>
+     </PackageReference>
+   </ItemGroup>
+diff --git a/ReferenceConflictAnalyser.VSExtension/source.extension.vsixmanifest b/ReferenceConflictAnalyser.VSExtension/source.extension.vsixmanifest
+index 70d519b..0b33fb1 100644
+--- a/ReferenceConflictAnalyser.VSExtension/source.extension.vsixmanifest
++++ b/ReferenceConflictAnalyser.VSExtension/source.extension.vsixmanifest
+@@ -10,21 +10,23 @@
+         <PreviewImage>Resources\icon-175x175.png</PreviewImage>
+     </Metadata>
+     <Installation InstalledByMsi="false">
+-        <InstallationTarget Version="[17.0,)" Id="Microsoft.VisualStudio.Pro" >
++        <InstallationTarget Version="[17.0,18.0)" Id="Microsoft.VisualStudio.Pro" >
+             <ProductArchitecture>amd64</ProductArchitecture>
+         </InstallationTarget>
+-        <InstallationTarget Version="[17.0,)" Id="Microsoft.VisualStudio.Community" >
++        <InstallationTarget Version="[17.0,18.0)" Id="Microsoft.VisualStudio.Community" >
++            <ProductArchitecture>amd64</ProductArchitecture>
++        </InstallationTarget>
++        <InstallationTarget Version="[17.0,18.0)" Id="Microsoft.VisualStudio.Enterprise" >
+             <ProductArchitecture>amd64</ProductArchitecture>
+         </InstallationTarget>
+     </Installation>
+     <Dependencies>
+-        <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />
+-        <Dependency Id="Microsoft.VisualStudio.MPF.12.0" DisplayName="Visual Studio MPF 12.0" d:Source="Installed" Version="[12.0,)" />
++        <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.7.2,)" />
+     </Dependencies>
+     <Assets>
+         <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
+     </Assets>
+     <Prerequisites>
+-        <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[15.0,)" />
++        <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[17.0,18.0)" DisplayName="Visual Studio core editor" />
+     </Prerequisites>
+ </PackageManifest>
+diff --git a/ReferenceConflictAnalyser.VSExtension/ReferenceConflictAnalyserPackage.cs b/ReferenceConflictAnalyser.VSExtension/ReferenceConflictAnalyserPackage.cs
+index ad08364..7e34c4b 100644
+--- a/ReferenceConflictAnalyser.VSExtension/ReferenceConflictAnalyserPackage.cs
++++ b/ReferenceConflictAnalyser.VSExtension/ReferenceConflictAnalyserPackage.cs
+@@ -5,16 +5,10 @@
+ //------------------------------------------------------------------------------
+ 
+ using System;
+-using System.ComponentModel.Design;
+-using System.Diagnostics;
+ using System.Diagnostics.CodeAnalysis;
+-using System.Globalization;
+ using System.Runtime.InteropServices;
+-using Microsoft.VisualStudio;
+-using Microsoft.VisualStudio.OLE.Interop;
+ using Microsoft.VisualStudio.Shell;
+ using Microsoft.VisualStudio.Shell.Interop;
+-using Microsoft.Win32;
+ using EnvDTE;
+ using ReferenceConflictAnalyser.VSExtension.UI.Utils;
+ using System.Threading;
+@@ -34,7 +28,7 @@ namespace ReferenceConflictAnalyser.VSExtension
+     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
+-    [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
++    [InstalledProductRegistration("#110", "#112", "2.0", IconResourceID = 400)]
+     [ProvideMenuResource("Menus.ctmenu", 1)]
+     [Guid(ReferenceConflictAnalyserPackage.PackageGuidString)]
+     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
+@@ -65,10 +59,11 @@ namespace ReferenceConflictAnalyser.VSExtension
+         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
+         {
+-            base.Initialize();
+-            UI.MenuCommand.Initialize(this);
++            await base.InitializeAsync(cancellationToken, progress);
+ 
+-            DTEHelper.CurrentDTE = (DTE)((System.IServiceProvider)this).GetService(typeof(DTE));
++            await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
++            UI.MenuCommand.Initialize(this);
++            DTEHelper.CurrentDTE = await GetServiceAsync(typeof(DTE)) as DTE;
+         }
+ 
+         #endregion
