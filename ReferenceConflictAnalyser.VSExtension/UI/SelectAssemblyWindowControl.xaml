@@ -6,42 +6,82 @@
              Background="{DynamicResource VsBrush.Window}"
              Foreground="{DynamicResource VsBrush.WindowText}"
              mc:Ignorable="d"
-             d:DesignHeight="300" d:DesignWidth="300"
+             d:DesignHeight="338" d:DesignWidth="600"
              Name="MyToolWindow">
-    <Grid Margin="10">
 
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition />
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="150px"></ColumnDefinition>
-            <ColumnDefinition/>
-            <ColumnDefinition Width="40px"></ColumnDefinition>
-        </Grid.ColumnDefinitions>
+    <UserControl.Resources>
+        <Style x:Key="FieldLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0 0 0 4"/>
+            <Setter Property="Foreground" Value="{DynamicResource VsBrush.WindowText}"/>
+        </Style>
+        <Style x:Key="PathTextBox" TargetType="TextBox">
+            <Setter Property="IsReadOnly" Value="True"/>
+            <Setter Property="Padding" Value="6 4"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Height" Value="26"/>
+            <Setter Property="Background" Value="{DynamicResource VsBrush.Window}"/>
+            <Setter Property="Foreground" Value="{DynamicResource VsBrush.WindowText}"/>
+        </Style>
+        <Style x:Key="BrowseButton" TargetType="Button">
+            <Setter Property="Padding" Value="10 4"/>
+            <Setter Property="Height" Value="26"/>
+            <Setter Property="Margin" Value="6 0 0 0"/>
+        </Style>
+    </UserControl.Resources>
 
+    <StackPanel Margin="16 14 16 14">
+        <TextBlock Text="Dependency Conflict Analyzer"
+                   FontSize="13" FontWeight="SemiBold"
+                   Foreground="{DynamicResource VsBrush.WindowText}"
+                   Margin="0 0 0 4"/>
+        <TextBlock Text="Analyze an assembly to detect reference conflicts and dependency issues."
+                   FontSize="11" TextWrapping="Wrap"
+                   Foreground="{DynamicResource VsBrush.GrayText}"
+                   Margin="0 0 0 12"/>
+        <Separator Margin="0 0 0 12"/>
 
-        <TextBlock Margin="3">Assembly to analyze</TextBlock>
-        <TextBox HorizontalAlignment="Stretch" Grid.Column="1"  Margin="3" Text="{Binding AssemblyPath, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="True"></TextBox>
-        <Button  Grid.Column="2" Margin="3" Command="{Binding SelectAssemblyCommand}" Content="..."  ToolTip="Browse..."></Button>
+        <TextBlock Text="Assembly to analyze" Style="{StaticResource FieldLabel}"/>
+        <DockPanel Margin="0 0 0 10">
+            <Button DockPanel.Dock="Right" Style="{StaticResource BrowseButton}"
+                    Command="{Binding SelectAssemblyCommand}" Content="Browse…"
+                    ToolTip="Select a .dll or .exe file to analyze"/>
+            <TextBox Style="{StaticResource PathTextBox}"
+                     Text="{Binding AssemblyPath, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                     ToolTip="{Binding AssemblyPath}"/>
+        </DockPanel>
 
+        <TextBlock Text="Config file (optional)" Style="{StaticResource FieldLabel}"/>
+        <DockPanel Margin="0 0 0 12">
+            <Button DockPanel.Dock="Right" Style="{StaticResource BrowseButton}"
+                    Command="{Binding SelectConfigCommand}" Content="Browse…"
+                    ToolTip="Select the related .config file"/>
+            <TextBox Style="{StaticResource PathTextBox}"
+                     Text="{Binding ConfigPath, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                     ToolTip="{Binding ConfigPath}"/>
+        </DockPanel>
 
-        <TextBlock Grid.Row="1" Margin="3">Related config file</TextBlock>
-        <TextBox Grid.Row="1" HorizontalAlignment="Stretch" Grid.Column="1"  Margin="3" Text="{Binding ConfigPath, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="True"></TextBox>
-        <Button Grid.Row="1" Grid.Column="2" Margin="3" Command="{Binding SelectConfigCommand}" Content="..." ToolTip="Browse..."></Button>
+        <DockPanel Margin="0 0 0 12">
+            <Button DockPanel.Dock="Right" Command="{Binding AnalyzeConfigCommand}"
+                    Content="Analyze Dependencies" FontWeight="SemiBold"
+                    Padding="16 5" Height="32"/>
+            <CheckBox VerticalAlignment="Center"
+                      IsChecked="{Binding IgnoreSystemAssemblies, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                      ToolTip="Exclude System.* assemblies from the analysis">
+                <TextBlock Text="Ignore system assemblies" FontSize="11"/>
+            </CheckBox>
+        </DockPanel>
 
-        <TextBlock Grid.Row="2" Margin="3">Ignore system assemblies</TextBlock>
-        <CheckBox Grid.Row="2" Grid.Column="1"  Margin="3" IsChecked="{Binding IgnoreSystemAssemblies, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ToolTip="Exclude from the analysis assemblies with names starting with System..."></CheckBox>
-    
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Margin="0 10 0 0">
-            <Button Margin="3" Command="{Binding AnalyzeConfigCommand}" Content="Analyze"></Button>
-        </StackPanel>
+        <Separator Margin="0 0 0 10"/>
 
-        <TextBlock Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Margin="3" TextWrapping="Wrap"
-                   Text="{Binding Warning, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"></TextBlock>
-    </Grid>
+        <DockPanel>
+            <TextBlock DockPanel.Dock="Left" Text="i" FontStyle="Italic" FontWeight="Bold"
+                       FontSize="12" Margin="0 1 8 0" VerticalAlignment="Top"
+                       Foreground="{DynamicResource VsBrush.GrayText}"/>
+            <TextBlock Text="{Binding Warning, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                       TextWrapping="Wrap" FontSize="11"
+                       Foreground="{DynamicResource VsBrush.GrayText}"/>
+        </DockPanel>
+    </StackPanel>
 </UserControl>
