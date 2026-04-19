@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26430.12
-MinimumVisualStudioVersion = 10.0.40219.1
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34723.18
+MinimumVisualStudioVersion = 17.0.31903.59
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReferenceConflictAnalyser", "ReferenceConflictAnalyser\ReferenceConflictAnalyser.csproj", "{28335ADD-45DE-44A3-97FF-0640330554EC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReferenceConflictAnalyser.VSExtension", "ReferenceConflictAnalyser.VSExtension\ReferenceConflictAnalyser.VSExtension.csproj", "{F947F475-F430-47F3-AC07-34870DFA3996}"

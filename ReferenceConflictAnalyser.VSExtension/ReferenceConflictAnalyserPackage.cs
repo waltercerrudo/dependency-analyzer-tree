@@ -40,7 +40,7 @@ namespace ReferenceConflictAnalyser.VSExtension
     /// </para>
     /// </remarks>
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
-    [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)] // Info on this package for Help/About
+    [InstalledProductRegistration("#110", "#112", "2.0", IconResourceID = 400)] // Info on this package for Help/About
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [Guid(ReferenceConflictAnalyserPackage.PackageGuidString)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
@@ -71,10 +71,12 @@ namespace ReferenceConflictAnalyser.VSExtension
         /// </summary>
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
-            base.Initialize();
-            UI.MenuCommand.Initialize(this);
+            await base.InitializeAsync(cancellationToken, progress);
 
-            DTEHelper.CurrentDTE = (DTE)((System.IServiceProvider)this).GetService(typeof(DTE));
+            await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+            UI.MenuCommand.Initialize(this);
+            DTEHelper.CurrentDTE = await GetServiceAsync(typeof(DTE)) as DTE;
+
         }
 
         #endregion
