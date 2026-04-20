@@ -1,1 +1,54 @@
 
+name: Publish VS Extension
+
+'on':
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g. 1.0.1)'
+        required: true
+
+jobs:
+  publish:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Setup NuGet
+      uses: NuGet/setup-nuget@v2
+
+    - name: Restore NuGet packages
+      run: nuget restore ReferenceConflictAnalyser.sln
+
+    - name: Build solution
+      run: msbuild ReferenceConflictAnalyser.sln /p:Configuration=Release /p:DeployExtension=false
+
+    - name: Find VSIX file
+      id: find_vsix
+      run: |
+        $vsix = Get-ChildItem -Recurse -Filter *.vsix | Select-Object -First 1
+        Write-Host "Found: $($vsix.FullName)"
+        echo "VSIX_PATH=$($vsix.FullName)" >> $env:GITHUB_OUTPUT
+      shell: pwsh
+
+    - name: Publish to Marketplace
+      run: |
+        $vsixPublisher = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -requires Microsoft.VisualStudio.Component.VSSDK -find "VSSDK\VisualStudioIntegration\Tools\Bin\VsixPublisher.exe" | Select-Object -First 1
+        
+        if (-not $vsixPublisher) {
+          Write-Host "VsixPublisher not found via vswhere, trying fallback path..."
+          $vsixPublisher = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VSSDK\VisualStudioIntegration\Tools\Bin\VsixPublisher.exe"
+        }
+        
+        Write-Host "Using VsixPublisher at: $vsixPublisher"
+        
+        & $vsixPublisher publish `
+          -payload "${{ steps.find_vsix.outputs.VSIX_PATH }}" `
+          -publishManifest "publishManifest.json" `
+          -personalAccessToken "${{ secrets.VS_MARKETPLACE_PAT }}"
+      shell: pwsh
