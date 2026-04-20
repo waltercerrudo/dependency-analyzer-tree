@@ -6,7 +6,6 @@ After installation it is available in the main menu: Tools -&gt; Analyze Assembl
 
 Download the latest release from Visual Studio Marketplace: https://marketplace.visualstudio.com/vsgallery/051172f3-4b30-4bbc-8da6-d55f70402734
 
-
 ##### Screenshot 1. Example of output
 ![alt tag](https://github.com/waltercerrudo/dependency-analyzer-tree/blob/master/Docs/Screenshots/output.png)
 
