@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json.schemastore.org/vsix-publish",
+  "categories": ["coding"],
+  "identity": {
+    "internalName": "dependency-analyzer-tree"
+  },
+  "overview": "README.md",
+  "publisher": "WalterACerrudo",
+  "assetFiles": [],
+  "outputFilePath": ""
+}
