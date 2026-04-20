@@ -8,7 +8,7 @@ Download the latest release from Visual Studio Marketplace: https://marketplace.
 
 
 ##### Screenshot 1. Example of output
-![alt tag](https://github.com/marss19/reference-conflicts-analyzer/blob/master/Docs/Screenshots/output.png)
+![alt tag](https://github.com/waltercerrudo/dependency-analyzer-tree/blob/master/Docs/Screenshots/output.png)
 
 
 There is also a command line version of the analyzer. It is intended to be used on production servers without Visual Studio installed. It generates a DGML file which can be opened on a different machine where Visual Studio with DGML viewer is installed. 
