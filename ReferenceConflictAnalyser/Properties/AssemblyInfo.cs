@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("ReferenceConflictAnalyser")]
-[assembly: AssemblyCopyright("Copyright ©  2018 Mykola Tarasyuk")]
+[assembly: AssemblyCopyright("Copyright ©  2026 Walter A. Cerrudo")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

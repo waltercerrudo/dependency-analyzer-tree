@@ -11,29 +11,37 @@ namespace ReferenceConflictAnalyser.VSExtension.UI
     using Microsoft.VisualStudio.Shell;
 
     /// <summary>
-    /// This class implements the tool window exposed by this package and hosts a user control.
+    /// Ventana de herramientas (Tool Window) de Visual Studio que actúa como contenedor
+    /// para el control de usuario <see cref="SelectAssemblyWindowControl"/>.
+    ///
+    /// En la arquitectura de extensiones de Visual Studio, una Tool Window tiene dos partes:
+    ///   - El <b>frame</b>: implementado por el shell de VS; gestiona el ciclo de vida,
+    ///     el anclaje (docking) y la visibilidad de la ventana.
+    ///   - El <b>pane</b>: implementado por la extensión mediante <see cref="ToolWindowPane"/>;
+    ///     contiene el contenido visual de la ventana.
+    ///
+    /// Esta clase representa el pane. Se registra como ventana flotante de instancia única
+    /// mediante el atributo <see cref="ProvideToolWindowAttribute"/> en
+    /// <see cref="ReferenceConflictAnalyserPackage"/>.
+    ///
+    /// Al crearse, instancia <see cref="SelectAssemblyWindowControl"/> y lo asigna como
+    /// contenido (<see cref="ToolWindowPane.Content"/>). ToolWindowPane gestiona el ciclo
+    /// de vida del control y llama a su Dispose cuando la ventana se cierra.
     /// </summary>
-    /// <remarks>
-    /// In Visual Studio tool windows are composed of a frame (implemented by the shell) and a pane,
-    /// usually implemented by the package implementer.
-    /// <para>
-    /// This class derives from the ToolWindowPane class provided from the MPF in order to use its
-    /// implementation of the IVsUIElementPane interface.
-    /// </para>
-    /// </remarks>
     [Guid("64f83bf2-678c-4b70-97e1-dc1f21dd29d1")]
     public class SelectAssemblyWindow : ToolWindowPane
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="SelectAssemblyWindow"/> class.
+        /// Inicializa la ventana de herramientas estableciendo su título y creando el control
+        /// WPF que se mostrará como contenido de la ventana.
         /// </summary>
         public SelectAssemblyWindow() : base(null)
         {
             this.Caption = "Select Assembly";
 
-            // This is the user control hosted by the tool window; Note that, even if this class implements IDisposable,
-            // we are not calling Dispose on this object. This is because ToolWindowPane calls Dispose on
-            // the object returned by the Content property.
+            // El control WPF es el contenido visual de la ventana.
+            // ToolWindowPane llama a Dispose sobre Content cuando la ventana se destruye,
+            // por lo que no es necesario gestionarlo manualmente.
             this.Content = new SelectAssemblyWindowControl(this);
            
         }

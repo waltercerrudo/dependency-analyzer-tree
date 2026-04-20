@@ -12,13 +12,30 @@ namespace ReferenceConflictAnalyser.VSExtension.UI
     using System.Windows.Controls;
 
     /// <summary>
-    /// Interaction logic for SelectAssemblyWindowControl.
+    /// Code-behind del control de usuario WPF definido en SelectAssemblyWindowControl.xaml.
+    ///
+    /// Este control implementa la vista (View) del patrón MVVM y es responsable únicamente de:
+    ///   1. Inicializar los componentes XAML mediante <see cref="InitializeComponent"/>.
+    ///   2. Crear e inyectar el <see cref="SelectAssemblyWindowViewModel"/> como DataContext,
+    ///      estableciendo así el enlace MVVM entre la vista y el ViewModel.
+    ///
+    /// Toda la lógica de presentación y los comandos residen en
+    /// <see cref="SelectAssemblyWindowViewModel"/>; este code-behind no contiene lógica de negocio.
+    ///
+    /// El control es instanciado por <see cref="SelectAssemblyWindow"/> y recibe la referencia
+    /// al <see cref="ToolWindowPane"/> padre para que el ViewModel pueda cerrar la ventana
+    /// después de ejecutar el análisis.
     /// </summary>
     public partial class SelectAssemblyWindowControl : UserControl
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="SelectAssemblyWindowControl"/> class.
+        /// Inicializa el control de usuario WPF y establece el DataContext con una instancia
+        /// de <see cref="SelectAssemblyWindowViewModel"/> pasando la referencia al pane padre.
         /// </summary>
+        /// <param name="parentWindow">
+        ///   Referencia al <see cref="ToolWindowPane"/> que contiene este control.
+        ///   Se usa en el ViewModel para cerrar la ventana tras completar el análisis.
+        /// </param>
         public SelectAssemblyWindowControl(ToolWindowPane parentWindow)
         {
             this.InitializeComponent();
@@ -26,7 +43,8 @@ namespace ReferenceConflictAnalyser.VSExtension.UI
         }
 
         /// <summary>
-        /// Handles click on the button by displaying a message box.
+        /// Manejador del evento Click del botón de depuración generado por la plantilla de VS.
+        /// No tiene funcionalidad en la versión final; permanece como código generado automáticamente.
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>

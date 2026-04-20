@@ -23,24 +23,26 @@ using System.Threading.Tasks;
 namespace ReferenceConflictAnalyser.VSExtension
 {
     /// <summary>
-    /// This is the class that implements the package exposed by this assembly.
+    /// Paquete principal de la extensión de Visual Studio para el análisis de conflictos
+    /// de dependencias de ensamblados .NET.
+    ///
+    /// Esta clase implementa el punto de entrada de la extensión VSIX mediante el patrón
+    /// <see cref="AsyncPackage"/> del Managed Package Framework (MPF). Es responsable de:
+    ///   1. Registrarse en el shell de Visual Studio con el GUID único definido en
+    ///      <see cref="PackageGuidString"/>.
+    ///   2. Registrar el comando de menú (<see cref="UI.MenuCommand"/>) en el menú Herramientas
+    ///      de Visual Studio durante la inicialización asíncrona.
+    ///   3. Obtener y exponer la instancia del servicio DTE (Development Tools Environment)
+    ///      a través de <see cref="DTEHelper.CurrentDTE"/>, que permite abrir archivos
+    ///      en el editor de Visual Studio desde el ViewModel.
+    ///   4. Registrar la ventana de herramientas (<see cref="UI.SelectAssemblyWindow"/>)
+    ///      como una ventana flotante de instancia única con dimensiones predefinidas.
+    ///
+    /// El paquete se carga de forma asíncrona en segundo plano (<c>AllowsBackgroundLoading = true</c>)
+    /// para no bloquear el inicio de Visual Studio.
     /// </summary>
-    /// <remarks>
-    /// <para>
-    /// The minimum requirement for a class to be considered a valid package for Visual Studio
-    /// is to implement the IVsPackage interface and register itself with the shell.
-    /// This package uses the helper classes defined inside the Managed Package Framework (MPF)
-    /// to do it: it derives from the Package class that provides the implementation of the
-    /// IVsPackage interface and uses the registration attributes defined in the framework to
-    /// register itself and its components with the shell. These attributes tell the pkgdef creation
-    /// utility what data to put into .pkgdef file.
-    /// </para>
-    /// <para>
-    /// To get loaded into VS, the package must be referred by &lt;Asset Type="Microsoft.VisualStudio.VsPackage" ...&gt; in .vsixmanifest file.
-    /// </para>
-    /// </remarks>
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
-    [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)] // Info on this package for Help/About
+    [InstalledProductRegistration("#110", "#112", "2.0", IconResourceID = 400)] // Info on this package for Help/About
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [Guid(ReferenceConflictAnalyserPackage.PackageGuidString)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
@@ -48,12 +50,17 @@ namespace ReferenceConflictAnalyser.VSExtension
     public sealed class ReferenceConflictAnalyserPackage : AsyncPackage
     {
         /// <summary>
-        /// ReferenceConflictAnalyserPackage GUID string.
+        /// GUID único que identifica este paquete dentro del shell de Visual Studio.
+        /// Debe coincidir con el GUID registrado en el archivo .vsixmanifest y en el
+        /// archivo .pkgdef generado durante la compilación de la extensión.
         /// </summary>
         public const string PackageGuidString = "23edc301-292e-4c85-a285-2b65941bb8ab";
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MenuCommand"/> class.
+        /// Constructor del paquete. Se ejecuta cuando Visual Studio crea la instancia del paquete,
+        /// antes de que éste sea "situado" (sited) en el entorno IDE. En este punto no están
+        /// disponibles los servicios de Visual Studio, por lo que no se debe hacer ninguna
+        /// inicialización que los requiera aquí.
         /// </summary>
         public ReferenceConflictAnalyserPackage()
         {
@@ -66,15 +73,29 @@ namespace ReferenceConflictAnalyser.VSExtension
         #region Package Members
 
         /// <summary>
-        /// Initialization of the package; this method is called right after the package is sited, so this is the place
-        /// where you can put all the initialization code that rely on services provided by VisualStudio.
+        /// Método de inicialización asíncrona del paquete. Se ejecuta después de que el paquete
+        /// ha sido situado en el entorno IDE y los servicios de Visual Studio están disponibles.
+        ///
+        /// Realiza los siguientes pasos:
+        ///   1. Llama a la inicialización base (<see cref="AsyncPackage.InitializeAsync"/>).
+        ///   2. Cambia al hilo principal de la UI (<c>JoinableTaskFactory.SwitchToMainThreadAsync</c>)
+        ///      porque el registro de comandos de menú y el acceso a DTE requieren el hilo principal.
+        ///   3. Inicializa el singleton <see cref="UI.MenuCommand.Instance"/> que registra el
+        ///      comando "Analizar dependencias de ensamblados" en el menú Herramientas.
+        ///   4. Obtiene el servicio DTE y lo inyecta en <see cref="DTEHelper.CurrentDTE"/> para
+        ///      que el ViewModel pueda abrir archivos en el editor de VS.
         /// </summary>
+        /// <param name="cancellationToken">Token para cancelar la inicialización si VS se está cerrando.</param>
+        /// <param name="progress">Permite reportar el progreso de la inicialización a VS.</param>
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
-            base.Initialize();
-            UI.MenuCommand.Initialize(this);
+            // Cambiar al hilo principal antes de registrar comandos de menú y acceder a DTE.
+            await base.InitializeAsync(cancellationToken, progress);
 
-            DTEHelper.CurrentDTE = (DTE)((System.IServiceProvider)this).GetService(typeof(DTE));
+            await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+            UI.MenuCommand.Initialize(this);
+            DTEHelper.CurrentDTE = await GetServiceAsync(typeof(DTE)) as DTE;
+
         }
 
         #endregion
