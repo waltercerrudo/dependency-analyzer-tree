@@ -1,7 +1,6 @@
-
 name: Build VS Extension
 
-on:
+'on':
   push:
     branches: [master]
   pull_request:
